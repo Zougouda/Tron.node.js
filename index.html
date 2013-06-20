@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>test</title>
+        <link rel="stylesheet" type="text/css" href="css/style.css" media="all" />
+    </head>
+    <body>
+        <p>Test</p>
+
+        <canvas id="canvas"></canvas>
+
+        <!--Socket.io-->
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+        <!--game-->
+        <script src="/js/config.js" type="text/javascript"></script>
+        <script src="/js/bike.js" type="text/javascript"></script>
+        <script src="/js/main.js" type="text/javascript"></script>
+
+        <script type="text/javascript">
+            var player = {};
+            var socket = io.connect("http://localhost:8000");
+            
+            socket.on("startPlaying", function(data)
+            {
+                player.userId = data.userId;
+                console.log("Je suis connecté! " + player.userId);
+                
+                main(data);
+                
+            });
+            
+            socket.on("updateBikeAngle", function(data){
+                bikes[data.userId].angle = data.angle;
+                console.log(bikes[data.userId].angle);
+            });
+            
+            socket.on("newPlayer",function(data){
+                bikes[data.userId] = new Bike({userId: data.userId, name:data.name}, data.bike.x, data.bike.y, data.bike.width, data.bike.height, data.bike.speed, data.bike.angle);
+            });
+            
+            player.name = prompt("Pseudo :", "Zougouda");
+            socket.emit("newPlayer", player.name);
+            //            main();
+        </script>
+    </body>
+</html>
