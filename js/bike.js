@@ -41,10 +41,13 @@ function Bike(player, x, y, width, height, speed, angle)
     };
     
     this.changeAngle = function(angle){
-        this.angle = angle;
-        socket.emit("updateBikeAngle", {
-            userId: player.userId,
-            angle: this.angle
-        });
+        if(angle != Math.abs(this.angle-180) //Si le joueur n'essaie pas de "faire demi-tour")
+        {
+            this.angle = angle;
+            socket.emit("updateBikeAngle", {
+                userId: player.userId,
+                angle: this.angle
+            });
+        }
     }
 }

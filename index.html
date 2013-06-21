@@ -39,7 +39,13 @@
             socket.on("newPlayer",function(data){
                 bikes[data.userId] = new Bike({userId: data.userId, name:data.name}, data.bike.x, data.bike.y, data.bike.width, data.bike.height, data.bike.speed, data.bike.angle);
             });
-            
+
+            socket.on("playerLeave", function(userId){
+                console.log(userId);
+                console.log(bikes[userId]);
+                delete bikes[userId];
+             });
+
             player.name = prompt("Pseudo :", "Zougouda");
             socket.emit("newPlayer", player.name);
             //            main();

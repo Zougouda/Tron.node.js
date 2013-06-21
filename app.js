@@ -11,9 +11,14 @@ var clientsIterator = 0;
 //var players = [];
 var players = {};
 
+function tronLog(logMessage)
+{
+    console.log("\tTRON - " + logMessage);
+}
+
 function newPlayer(name)
 {
-    console.log("\tinfo: " + name + " has entered the race!");
+    tronLog(name + " has entered the race!");
     
     var newBike = new Bike({}, WIDTH/2, HEIGHT/2, 6, 6, 1, 90);
     var newPlayer = {
@@ -36,27 +41,34 @@ function newPlayer(name)
 
 function playerLeave()
 {
-    console.log("RAGGGGGGGE QUIIIIIIIIT !!!");
+    this.broadcast.emit("playerLeave", this.userId);
+    delete players[this.userId];
+    tronLog('PLAYER LEFT ' + this.userId );
 }
 
 function updateBikePosition(data)
 {
-    //    console.log("\t new coords for bike #" + data.userId + " ("+data.x+", "+data.y+")");
-    players[data.userId].bike.x = data.x;
-    players[data.userId].bike.y = data.y;
+    if(isset(players[data.userId]))
+    {
+        //    console.log("\t new coords for bike #" + data.userId + " ("+data.x+", "+data.y+")");
+        players[data.userId].bike.x = data.x;
+        players[data.userId].bike.y = data.y;
+    }
 }
 
 function updateBikeAngle(data)
 {
-        console.log("\t new Angle for bike #" + data.userId + " ("+data.angle+")");
-    players[data.userId].bike.angle = data.angle;
-    this.broadcast.emit("updateBikeAngle", data);
-
+    if(isset(players[data.userId]))
+    {
+        tronLog("new Angle for bike #" + data.userId + " ("+data.angle+")");
+        players[data.userId].bike.angle = data.angle;
+        this.broadcast.emit("updateBikeAngle", data);
+    }
 }
 
 //Server
 server.on("request", function (req, res) {
-    console.log("receiving " + req.method  + " request from " + req.headers.host  + " on " + req.url );
+    tronLog("receiving " + req.method  + " request from " + req.headers.host  + " on " + req.url );
     
     //On déclare un objet contenant les ressources externes à charger (styles et scripts)
     var allowedRessources = {
@@ -76,6 +88,10 @@ server.on("request", function (req, res) {
 
 //socket.io
 var io = require("socket.io").listen(server);
+io.enable('browser client minification');  // send minified client
+io.enable('browser client etag');          // apply etag caching logic based on version number
+io.enable('browser client gzip');          // gzip the file
+io.set('log level', 2);                    // reduce logging
 
 
 io.sockets.on("connection", function(client){
@@ -88,14 +104,10 @@ io.sockets.on("connection", function(client){
     
     client.on("newPlayer", newPlayer); 
     
-    client.on('disconnect', function () {
-        
-        //Useful to know when someone disconnects
-        console.log('\tinfo: ' + client.userId );
-    
-    });
+    client.on('disconnect', playerLeave);
     
     client.on("updateBikePosition", updateBikePosition);
+
     client.on("updateBikeAngle", updateBikeAngle);
 });
 
@@ -105,4 +117,4 @@ eval(fs.readFileSync(__dirname+'/js/bike.js')+'');
 
 //Start server
 server.listen(portNumber);
-console.log("Server initialized. Now listening on port " + portNumber);
+tronLog("Server initialized. Now listening on port " + portNumber);
