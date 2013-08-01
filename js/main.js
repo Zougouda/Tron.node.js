@@ -17,26 +17,28 @@ function main(data)
 {
     //    bikes = [];
     bikes = {};
-    
-    
+    trails = {};
+    trailsIndex = 0;
+
+
     //    console.log(bikes);
-    
-    player.bike = new Bike(player, data.yourBike.x, data.yourBike.y, data.yourBike.width, data.yourBike.height, data.yourBike.speed, data.yourBike.angle);
-    
+
+    player.bike = new Bike(player, data.yourBike.x, data.yourBike.y, data.yourBike.width, data.yourBike.height, data.yourBike.speed, data.yourBike.angle, data.color);
+
     //    bikes.push(player.bike);
     bikes[player.userId] = player.bike;
-    
+
     //    bike = new Bike(player, data.yourBike.x, data.yourBike.y, data.yourBike.width, data.yourBike.height, data.yourBike.speed, data.yourBike.angle);
     //    bikes.push(bike);
-    
-    
+
+
     //    data.otherPlayers.forEach(function(otherPlayer){
     //        bikes.push(new Bike({
     //            name: otherPlayer.name, 
     //            userId: otherPlayer.userId
     //        }, otherPlayer.bike.x, otherPlayer.bike.y, otherPlayer.bike.width, otherPlayer.bike.height, otherPlayer.bike.speed, otherPlayer.bike.angle));
     //    });
-    
+
     for(i in data.otherPlayers)
     {
         bikes[i] = new Bike({
@@ -44,14 +46,14 @@ function main(data)
             userId: data.otherPlayers[i].userId
         }, data.otherPlayers[i].bike.x, data.otherPlayers[i].bike.y, data.otherPlayers[i].bike.width, data.otherPlayers[i].bike.height, data.otherPlayers[i].bike.speed, data.otherPlayers[i].bike.angle);
     }
-    
+
     setInterval(game, DISPLAY_RATE);
 }
 
 function game()
 {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    
+
     //    bikes.forEach(function(bike){
     //        bike.update();
     //        bike.draw();
@@ -63,23 +65,28 @@ function game()
         bikes[i].draw();
     }
 
+    for(j in trails)
+    {
+        trails[j].draw();
+    }
+
 }
 
 addEventListener("keydown", function(e){
     if(e.keyCode == 39)
-    {
-        player.bike.changeAngle(0);
-    }
-    else if(e.keyCode == 38)
-    {
-        player.bike.changeAngle(90);
-    }
-    else if(e.keyCode == 37)
-    {
-        player.bike.changeAngle(180)
-    }
-    else if(e.keyCode == 40)
-    {
-        player.bike.changeAngle(270)
-    }
+{
+    player.bike.changeAngle(0);
+}
+else if(e.keyCode == 38)
+{
+    player.bike.changeAngle(90);
+}
+else if(e.keyCode == 37)
+{
+    player.bike.changeAngle(180)
+}
+else if(e.keyCode == 40)
+{
+    player.bike.changeAngle(270)
+}
 });

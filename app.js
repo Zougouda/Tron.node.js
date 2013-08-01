@@ -13,22 +13,25 @@ var players = {};
 
 function tronLog(logMessage)
 {
-    console.log("\tTRON - " + logMessage);
+    console.log("   TRON - " + logMessage);
 }
 
 function newPlayer(name)
 {
     tronLog(name + " has entered the race!");
     
-    var newBike = new Bike({}, WIDTH/2, HEIGHT/2, 6, 6, 1, 90);
+    var playerColor = [Math.random() * 255 >> 0, Math.random() * 255 >> 0, Math.random() * 255 >> 0];
+    var newBike = new Bike({}, WIDTH/2, HEIGHT/2, 6, 6, 1, 90, playerColor);
     var newPlayer = {
         userId: this.userId, 
         name: name, 
-        bike:newBike
+        bike:newBike,
+        color: playerColor
     };
     
     this.emit("startPlaying", {
         userId: this.userId, 
+        color: playerColor, 
         yourBike: newBike,
         otherPlayers: players
     });
@@ -74,6 +77,7 @@ server.on("request", function (req, res) {
     var allowedRessources = {
         "/js/main.js":true,
         "/js/config.js":true,
+        "/js/trail.js":true,
         "/js/bike.js":true,
         "/css/style.css":true
     };
@@ -88,9 +92,9 @@ server.on("request", function (req, res) {
 
 //socket.io
 var io = require("socket.io").listen(server);
-io.enable('browser client minification');  // send minified client
-io.enable('browser client etag');          // apply etag caching logic based on version number
-io.enable('browser client gzip');          // gzip the file
+//io.enable('browser client minification');  // send minified client
+//io.enable('browser client etag');          // apply etag caching logic based on version number
+//io.enable('browser client gzip');          // gzip the file
 io.set('log level', 2);                    // reduce logging
 
 
@@ -107,13 +111,54 @@ io.sockets.on("connection", function(client){
     client.on('disconnect', playerLeave);
     
     client.on("updateBikePosition", updateBikePosition);
-
+ 
     client.on("updateBikeAngle", updateBikeAngle);
+
+    //Game Update Loop
+setInterval(gameUpdateLoop, 50);
+
+function gameUpdateLoop()
+{
+    for(i in players)
+    {
+
+        if(players[i].bike.x < 0
+                || players[i].bike.x > WIDTH
+                || players[i].bike.y < 0
+                || players[i].bike.y > HEIGHT)
+        {
+            //client.emit("test");
+
+
+            //tronLog("YOU'RE DEAD");
+            //TODO : emit event to destroy the player
+        }
+
+        for(j in players)
+        {
+            if(
+                players[i].bike.x < players[j].bike.x + players[j].bike.width
+                && players[i].bike.y < players[j].bike.y + players[j].bike.height
+                && players[j].bike.x < players[i].bike.x + players[i].bike.width
+                && players[j].bike.y < players[i].bike.y + players[i].bike.height
+                && players[j] != players[i]
+              )
+            {
+                tronLog("COLLISION !!!");
+                //TODO emit events to destroy both players
+            }
+        }
+    } 
+}
 });
 
 //external files includes
 eval(fs.readFileSync(__dirname+'/js/config.js')+'');
+eval(fs.readFileSync(__dirname+'/js/trail.js')+'');
 eval(fs.readFileSync(__dirname+'/js/bike.js')+'');
+
+
+
 
 //Start server
 server.listen(portNumber);

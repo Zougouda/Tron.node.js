@@ -15,6 +15,7 @@
 
         <!--game-->
         <script src="/js/config.js" type="text/javascript"></script>
+        <script src="/js/trail.js" type="text/javascript"></script>
         <script src="/js/bike.js" type="text/javascript"></script>
         <script src="/js/main.js" type="text/javascript"></script>
 
@@ -25,6 +26,7 @@
             socket.on("startPlaying", function(data)
             {
                 player.userId = data.userId;
+                player.color = data.color;
                 console.log("Je suis connecté! " + player.userId);
                 
                 main(data);
@@ -33,11 +35,12 @@
             
             socket.on("updateBikeAngle", function(data){
                 bikes[data.userId].angle = data.angle;
-                console.log(bikes[data.userId].angle);
+                bikes[data.userId].newTrail();
+                //console.log(bikes[data.userId].angle);
             });
             
             socket.on("newPlayer",function(data){
-                bikes[data.userId] = new Bike({userId: data.userId, name:data.name}, data.bike.x, data.bike.y, data.bike.width, data.bike.height, data.bike.speed, data.bike.angle);
+                bikes[data.userId] = new Bike({userId: data.userId, name:data.name, color:data.color}, data.bike.x, data.bike.y, data.bike.width, data.bike.height, data.bike.speed, data.bike.angle, data.color);
             });
 
             socket.on("playerLeave", function(userId){
@@ -45,6 +48,10 @@
                 console.log(bikes[userId]);
                 delete bikes[userId];
              });
+
+            socket.on("test", function(){
+                    alert("dabouss");
+                    });
 
             player.name = prompt("Pseudo :", "Zougouda");
             socket.emit("newPlayer", player.name);
